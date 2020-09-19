@@ -1,0 +1,22 @@
+	#header{height:50px; width:100%; position:fixed; background-color:#6699CC;z-index:999;} 
+	.menu{height:50px;width:200px;background: #002147; ;text-align: center;font-size: 24px;}
+	.menu:hover,#logout:hover{ background: gray;}
+	.menu:hover,#login:hover{ background: gray;}
+	.menu:hover,#register:hover{ background: gray;}
+	a[target]{ text-decoration: none; color:white}
+	div[class="menu"]{text-decoration: none; color:white}
+	#spot{margin-left:0;}
+	#track{margin-left:400px;top:0%;position:absolute;}
+	#comment{margin-left:200px;top:0%;position:absolute;}
+	#heat{margin-left:600px;top:0%;position:absolute;}
+	#bill{margin-left:800px;top:0%;position:absolute;}
+	#logout{right:125px;top:25%;height:25px;width:100px;position:absolute;background: #002147;padding:3px;text-align: center;border:1px solid #6699CC; border-radius: 10px;font-size:12px;}
+	#login{right:200px;top:25%;height:25px;width:100px;position:absolute;background: #002147;padding:3px;text-align: center;border:1px solid #6699CC; border-radius: 10px;font-size:12px;}
+	#register{right:50px;top:25%;height:25px;width:100px;position:absolute;background: #002147;padding:3px;text-align: center;border:1px solid #6699CC; border-radius: 10px;font-size:12px;}
+	#container{height:95%;width:100%;top:5%}
+
+	ul.menu{ list-style: none; margin-top:14px; padding:0;display: none;background: #002147;position: absolute;}
+	ul.menu li{height:50px;width:200px;background: #002147; ;text-align: center;font-size: 24px;}
+	#comment:hover ul{ display: block;}
+	#heat:hover ul{ display: block;}
+	li:hover{ background: gray;}

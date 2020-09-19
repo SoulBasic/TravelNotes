@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+            <title>注册_个人旅行足迹系统</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="lore.css" rel="stylesheet"/>
+        <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/lib/jquery.js"></script>
+        <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+        <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+        <script>
+            $.validator.setDefaults({
+                 submitHandler: function() {
+                 //AJAX代码
+
+                 $.post("/register", {
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value,
+                phonenum: document.getElementById("phonenum").value
+                }, function (data) {
+                    data = JSON.parse(data);
+                    if(data.result == -1 ||data.result == 1){
+                        alert(data.message);//显示出服务器返回的错误信息
+                        document.getElementById("username").value =" ";
+                        document.getElementById("password").value =" ";
+                        document.getElementById("phonenum").value =" ";
+                        return;
+                    }
+                    if(data.result ==0){
+                        alert(data.message);
+                        window.location.href="/login.html";//重定向到登录
+                    }
+                }
+            )
+                }
+             });
+             $().ready(function() {
+            // 在键盘按下并释放及提交后验证提交表单
+            $("#registForm").validate({
+                rules: {
+                username: {
+                    required: true,
+                    minlength: 3
+                },
+                password: {
+                    required: true,
+                    minlength: 6
+                },
+                confirm_password: {
+                    required: true,
+                    minlength: 6,
+                    equalTo: "#password"
+                },
+                phonenum:{
+                    required:true,
+                    minlength:11,
+                }
+                },
+                messages: {
+                username: {
+                    required: "请输入用户名",
+                    minlength: "用户名不小于3个字符"
+                },
+                password: {
+                    required: "请输入密码",
+                    minlength: "密码长度不能小于6个字符"
+                },
+                confirm_password: {
+                    required: "请输入密码",
+                    minlength: "密码长度不能小于6个字符",
+                    equalTo: "两次密码输入不一致"
+                },
+                phonenum:{
+                    required:"请输入手机号",
+                    minlength:"请输入11位手机号"
+                }
+                }
+                })
+            });
+         </script>
+         <style>
+             .error{
+                 color:red;
+             }
+         </style>
+    </head>
+    <body>
+        <div class="mainContentBox">
+            <div class="mainContent">
+                <div class="leftAccount">
+                    <img src="ns.jpg" />
+                </div>
+                <div class="rightAccount">
+                    <div id="login-Window">
+                        <p class="accountTit">注册</p>
+                        <form id="registForm" method="POST" action="/register">
+                            <ul type="none">
+                                <li>
+                                    手机号
+                                    <label for="phonenum" class="error"></label> 
+                                    <input id="phonenum" name="phonenum" type="text" placeholder="手机号" />
+                                </li>
+                                <li>
+                                    密码
+                                    <label for="password" class="error"></label> 
+                                    <input id="password" name="password" type="password" placeholder="设置密码" />
+                                </li>
+                                <li>
+                                    确认密码
+                                    <label for="confirm_password" class="error"></label> 
+                                    <input id="confirm_password" name="confirm_password" type="password" placeholder="确认密码" />
+                                </li>
+                                <li>
+                                    用户名
+                                    <label for="username" class="error"></label> 
+                                    <input id="username" name="username" type="text" placeholder="用户名(昵称)" />
+                                </li>
+                                <li>
+                                    <input type="submit" value="注册" class="btn-submit"/>
+                                </li>
+                            </ul>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,513 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css" />
+    <link rel="stylesheet" href="./header.css">
+    <title>景区热力</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        .amap-info-content.amap-info-outer {
+          background-color: #27272b;
+          color: #f0f2ff;
+          width: 250px;
+      }
+      .bottom-center .amap-info-sharp {
+          border-top: 8px solid #27272b;
+      }
+      .bottom-center button {
+        border: none;
+        color: #2181ff;
+        float: right;
+        background: transparent;
+      }
+      .amap-info-close {
+        color: #27272b;
+      }
+    </style>
+</head>
+<body  onload="loginCheck()">
+<div id="header">
+    <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
+    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="comment" class="menu">景区详情
+        <ul class="menu">
+            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+        </ul>
+    </div>
+    <div id="heat" class="menu">足迹数据可视化
+        <ul class="menu">
+            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+        </ul>
+    </div>
+    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="/login.html" target="_self">登录</a></div>
+    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="logout">注销</div>
+</div>
+<div id="container"></div>
+
+<div class="info" id="text" style="margin-top:50px;">单击地图下钻查看景区（省/市/县）</div>
+<div class="input-card" style="width:30rem;height:16rem">
+    <h4>5A级景区热力</h4>
+    <div>
+        <div class="input-item">
+            <button id="road" class="btn" style="margin-left:3rem;">显示/隐藏实时路况</button>
+            <button id="to-up" class="btn" style="margin-left:3rem;;">行政区上浮</button>
+            <!-- <button id="xzq" class="btn" style="margin-left:2rem;">显示/隐藏行政区热力图</button> -->
+            <button id="quantity" class="btn" style="margin-left:3rem;margin-top:1rem;">景区个数热力图</button>
+            <!-- <button id="detail" class="btn" style="margin-left:4.5rem;margin-top:1rem;">显示/隐藏景区点</button> -->
+            <button id="max" class="btn" style="margin-left:4.5rem;margin-top:1rem;">景区承载量热力图</button>
+            <button id="pop" class="btn" style="margin-left:3rem;margin-top:1rem;">景区MBI指数（人气）热力图</button>
+        </div>
+    </div>
+</div>
+<script src="./jquery-1.11.0.min.js"></script>
+<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=58c1e130c92ca38f524f575edf6b102d&plugin=AMap.Geocoder"></script>
+<script src="https://webapi.amap.com/ui/1.1/main.js"></script>
+<script src="https://webapi.amap.com/loca?v=1.3.0&key=58c1e130c92ca38f524f575edf6b102d"></script>
+<script src="https://webapi.amap.com/loca?v=1.3.2&key=58c1e130c92ca38f524f575edf6b102d"></script>
+<script src="heatmap.js"></script>
+<script type="text/javascript">
+    
+    var map = new AMap.Map('container', {
+        resizeEnable: true,
+        zoom: 5.5,
+        center: [109, 36],
+        mapStyle: 'amap://styles/fresh',
+      //  viewMode: '3D',
+    });
+
+    map.plugin(['AMap.Scale'], function(){
+        var scale = new AMap.Scale();
+        map.addControl(scale);
+    });
+
+    map.plugin(["AMap.ToolBar"],function(){
+    //加载工具条
+        var tool = new AMap.ToolBar();
+        map.addControl(tool);    
+    });
+
+    //实时路况图层
+    var trafficLayer = new AMap.TileLayer.Traffic({
+        zIndex: 10,
+        autoRefresh:true,
+        interval:10
+    });
+
+    trafficLayer.setMap(map);
+    trafficLayer.hide();
+    var isVisible = false;
+    $('#road').click(function () {
+        
+        if (isVisible) {
+            trafficLayer.hide();
+            isVisible = false;
+            document.getElementById("text").innerHTML = "点击下方按钮查看景区流量";
+        } else {
+            map.setZoom(5.5);
+            trafficLayer.show();
+            isVisible = true;
+            document.getElementById("text").innerHTML = "实时路况每隔10秒自动刷新";
+        }
+    });
+
+    //热力图1_5A个数热力
+    if (!isSupportCanvas()) {
+        alert('热力图仅对支持canvas的浏览器适用,您所使用的浏览器不能使用热力图功能,请换个浏览器试试~')
+    }
+        //判断浏览区是否支持canvas
+        function isSupportCanvas() {
+        var elem = document.createElement('canvas');
+        return !!(elem.getContext && elem.getContext('2d'));
+    }
+    var heatmap;
+    map.plugin(["AMap.Heatmap"], function () {
+        //初始化heatmap对象
+        heatmap = new AMap.Heatmap(map, {
+            radius: 25, // 每个点的覆盖范围半径，单位是像素
+            /**
+             * 热力图的透明度，包含两个值（取值范围从0到1），表示透明度从完全透明到完全不透明的变化值。
+             * 这个选项对应着热力图颜色的渐变。
+             * 举个例子，opacity: [0, 1]，则坐标点的数目在最小梯度的区域是完全透明的，在最大梯度的区域是完全不透明的。
+             * 再举个例子，opacity: [1, 1]，则整个热点图的区域都是完全不透明的。
+             * 所谓梯度见下面的gradient配置说明。
+             */
+            opacity: [0, 0.8],
+
+            /**
+             * 颜色梯度配置，我们设目标值(某点范围内点数目/下面配置的max)为x。
+             * key是x的区间配置,value是对应区间的颜色。
+             * 举个例子，假设gradient和max的配置均是下面的代码。
+             * 当某个点出现的数目为10时，x = 某点范围内点数目 / 下面配置的max = 10/10 = 1, 
+             * x > 0.9，则目标区域显示的颜色为红色。
+             * 具体的范围如下：
+             * x > 0.9 			red
+             * 0.9 > x > 0.7 	yellow
+             * 0.7 > x > 0.5	green
+             * 0.5 > x > 0.3 	blue
+             * 0.3 > x			blue
+             * 注意，即使x的值小于0.3还是会有颜色。
+             */
+            gradient:{
+                0.3: 'blue',
+                0.5: 'green',
+                0.7: 'yellow',
+                0.9: 'red'
+            }
+        });
+        //设置数据集
+        heatmap.setDataSet({
+            data: heatmapData5Apro,	// 加载热力图所需数据
+            max: 10		
+        });
+    });
+    heatmap.setMap(map);
+    heatmap.hide();
+    var isVisibleh = false;
+    $('#quantity').click(function () {
+        if (isVisibleh) {
+            heatmap.hide();
+            isVisibleh = false;
+            document.getElementById("text").innerHTML = "点击下方按钮查看景区流量";
+        } else {
+            heatmap.show();
+            isVisibleh = true;
+            document.getElementById("text").innerHTML = "截止2019年各行政区景区个数统计";
+        }
+    });
+    
+
+    //承载量热力图
+    var heatmapmax;
+    map.plugin(["AMap.Heatmap"], function () {
+        //初始化heatmap对象
+        heatmapmax = new AMap.Heatmap(map, {
+            radius: 25, // 每个点的覆盖范围半径，单位是像素
+            /**
+             * 热力图的透明度，包含两个值（取值范围从0到1），表示透明度从完全透明到完全不透明的变化值。
+             * 这个选项对应着热力图颜色的渐变。
+             * 举个例子，opacity: [0, 1]，则坐标点的数目在最小梯度的区域是完全透明的，在最大梯度的区域是完全不透明的。
+             * 再举个例子，opacity: [1, 1]，则整个热点图的区域都是完全不透明的。
+             * 所谓梯度见下面的gradient配置说明。
+             */
+            opacity: [0, 0.8],
+
+            /**
+             * 颜色梯度配置，我们设目标值(某点范围内点数目/下面配置的max)为x。
+             * key是x的区间配置,value是对应区间的颜色。
+             * 举个例子，假设gradient和max的配置均是下面的代码。
+             * 当某个点出现的数目为10时，x = 某点范围内点数目 / 下面配置的max = 10/10 = 1, 
+             * x > 0.9，则目标区域显示的颜色为红色。
+             * 具体的范围如下：
+             * x > 0.9 			red
+             * 0.9 > x > 0.7 	yellow
+             * 0.7 > x > 0.5	green
+             * 0.5 > x > 0.3 	blue
+             * 0.3 > x			blue
+             * 注意，即使x的值小于0.3还是会有颜色。
+             */
+            gradient:{
+                0.3: 'red',
+                0.5: 'yellow',
+                0.7: 'blue',
+                0.9: 'green'
+            }
+        });
+        //设置数据集
+        heatmapmax.setDataSet({
+            data: heatmapDatamax,	// 加载热力图所需数据
+            max: 50		
+        });
+    });
+    heatmapmax.setMap(map);
+    heatmapmax.hide();
+    var isVisiblehm = false;
+    $('#max').click(function () {
+        if (isVisiblehm) {
+            heatmapmax.hide();
+            isVisiblehm = false;
+            document.getElementById("text").innerHTML = "点击下方按钮查看景区流量";
+        } else {
+            heatmapmax.show();
+            isVisiblehm = true;
+            document.getElementById("text").innerHTML = "截止2018年景区最大承载力统计";
+        }
+    });
+
+    //人气热力图
+    var heatmappop;
+    map.plugin(["AMap.Heatmap"], function () {
+        //初始化heatmap对象
+        heatmappop = new AMap.Heatmap(map, {
+            radius: 25, // 每个点的覆盖范围半径，单位是像素
+            /**
+             * 热力图的透明度，包含两个值（取值范围从0到1），表示透明度从完全透明到完全不透明的变化值。
+             * 这个选项对应着热力图颜色的渐变。
+             * 举个例子，opacity: [0, 1]，则坐标点的数目在最小梯度的区域是完全透明的，在最大梯度的区域是完全不透明的。
+             * 再举个例子，opacity: [1, 1]，则整个热点图的区域都是完全不透明的。
+             * 所谓梯度见下面的gradient配置说明。
+             */
+            opacity: [0, 0.8],
+
+            /**
+             * 颜色梯度配置，我们设目标值(某点范围内点数目/下面配置的max)为x。
+             * key是x的区间配置,value是对应区间的颜色。
+             * 举个例子，假设gradient和max的配置均是下面的代码。
+             * 当某个点出现的数目为10时，x = 某点范围内点数目 / 下面配置的max = 10/10 = 1, 
+             * x > 0.9，则目标区域显示的颜色为红色。
+             * 具体的范围如下：
+             * x > 0.9 			red
+             * 0.9 > x > 0.7 	yellow
+             * 0.7 > x > 0.5	green
+             * 0.5 > x > 0.3 	blue
+             * 0.3 > x			blue
+             * 注意，即使x的值小于0.3还是会有颜色。
+             */
+            gradient:{
+                0.3: 'blue',
+                0.5: 'green',
+                0.7: 'yellow',
+                0.9: 'red'
+            }
+        });
+        //设置数据集
+        heatmappop.setDataSet({
+            data: heatmapData5Apop,	// 加载热力图所需数据
+            max: 180		
+        });
+    });
+    heatmappop.setMap(map);
+    heatmappop.hide();
+    var isVisiblehp = false;
+    $('#pop').click(function () {
+        if (isVisiblehp) {
+            heatmappop.hide();
+            isVisiblehp = false;
+            document.getElementById("text").innerHTML = "点击下方按钮查看景区流量";
+        } else {
+            heatmappop.show();
+            isVisiblehp = true;
+            document.getElementById("text").innerHTML = "2020年6月景区人气";
+        }
+    });
+
+    //景区点
+    var infoWinj;
+        infoWinj = new AMap.InfoWindow({
+                closeWhenClickMap: true,
+            });
+        var layer = new Loca.PointLayer({
+                map: map,
+                eventSupport: true
+            });
+            layer.on('mousemove', function (ev) {
+            // 事件类型
+            var type = ev.type;
+            // 当前元素的原始数据
+            var rawData = ev.rawData;
+            // 原始鼠标事件
+            var originalEvent = ev.originalEvent;
+            var lnglat = ev.lnglat;
+            var count = rawData.count;
+            var content = [
+                '景区名称：' + count,
+                '<br>' ,
+                '经纬度：' + lnglat,
+                '<br>',
+            ];
+            infoWinj.setContent(content.join(''));
+            infoWinj.open(map,lnglat);
+        });
+        layer.on('mouseleave', function (ev) {
+            infoWinj.close();
+        });
+        layer.setData(detaildata, {
+            lnglat: function (data) {
+                var item = data.value;
+                return [item.lng, item.lat];
+            }
+        });
+        layer.setOptions({
+                style: {
+                    // 圆形半径，单位像素
+                    radius: 8,
+                    // 填充颜色
+                    color: '#4fc2ff',
+                    // 描边颜色
+                    borderColor: '#ffffff',
+                    // 描边宽度，单位像素
+                    borderWidth: 1.5,
+                    // 透明度 [0-1]
+                    opacity: 1,
+                },
+                selectStyle: {
+                    radius: 8,
+                    color: '#FFF684'
+                }
+            });
+        layer.render();
+    
+
+    //行政区热力
+    var infoWin;
+
+        infoWin = new AMap.InfoWindow({
+            closeWhenClickMap: true,
+        });
+
+        var vLayer = new Loca.DistrictLayer({
+            fitView: true,
+            eventSupport: true,
+            drillDown: false,
+            zIndex:5
+            //map: map
+        });
+        vLayer.setMap(map);
+        //vLayer.hide();
+        // var isVisiblev = true;
+        // $('#xzq').click(function () {
+        //     if (isVisiblev) {
+        //         vLayer.hide();
+        //         isVisiblev = false;
+        //         document.getElementById("text").innerHTML = "点击下方按钮查看景区流量";
+        //     } else {
+        //         vLayer.show();
+        //         isVisiblev = true;
+        //         document.getElementById("text").innerHTML = "单击地图下钻查看景区（省/市/县）";
+        //     }
+        // });
+
+        vLayer.on('click', function (ev) {
+            var originalEv = ev.originalEvent;
+
+            var lnglat = map.containerToLngLat(new AMap.Pixel(originalEv.clientX, originalEv.clientY));
+            var feature = ev.feature;
+            var value = ev.value;
+            var property = feature.subFeature.properties;
+
+            infoWin.open(map, lnglat);
+            var content = [
+                '行政区：' + property.name,
+                '<br>',
+                '5A级景区个数：' + value,
+                '<br>',
+                property.childrenNum ? '<button onclick="go2Adcode(event, ' + property.adcode + ')">下钻</button>' : ''
+            ];
+            infoWin.setContent(content.join(''));
+        });
+
+        function go2Adcode(event, code) {
+            event.stopPropagation();
+            infoWin.close();
+            vLayer.goto(code);
+        }
+
+        $.get('https://a.amap.com/Loca/static/mock/tourist_attractions.csv', function (data) {
+            vLayer.setData(data, {
+                type: 'csv',
+                lnglat: '经纬度',
+                value: '省内5A景区数量'
+            });
+
+            vLayer.setOptions({
+                mode: 'count',
+                style: {
+                    color: ['#0c2c84', '#225ea8', '#225ea8', '#41b6c4', '#7fcdbb', '#c7e9b4', '#ffffcc']
+                },
+                selectStyle: false
+            });
+
+            vLayer.render();
+
+        });
+
+         $('#to-up').click(function () {
+             vLayer.goto(-1);
+         });
+
+
+
+
+    $('#logout').on('click', logout);
+    function loginCheck() {
+        userName = getCookie("userName");
+        if (userName == null || userName == "") {
+            document.getElementById("logout").style.display = "none";
+        } else {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("register").style.display = "none";
+            var logout = document.getElementById("logout");
+            logout.innerText = "欢迎回来：" + userName;
+            logout.style = "color:white";
+        }
+    }
+
+    function logout() {
+        var check = confirm("您确定要注销吗？");
+        if (!check)
+            return;
+
+        clearAllCookie();
+        var res;
+        $.ajax({
+            type: "GET",
+            url: "/login",
+            data: {affirm: "1"},
+            dataType: "text",
+            async: false,
+            success: function (result) {
+                res = JSON.parse(result);
+            },
+            error: function (e) {
+                alert("注销失败，请检查网络或重试");
+            }
+        });
+        if (res.result == 1 || res.result == -1) {
+            alert(res.message);
+            return;
+        }
+        alert(res.message);
+        window.location.href = "/index.html";
+
+
+    }
+
+    function getCookie(name) {
+        var prefix = name + "="
+        var start = document.cookie.indexOf(prefix)
+
+        if (start == -1) {
+            return null;
+        }
+
+        var end = document.cookie.indexOf(";", start + prefix.length)
+        if (end == -1) {
+            end = document.cookie.length;
+        }
+
+        var value = document.cookie.substring(start + prefix.length, end)
+        return unescape(value);
+    }
+
+    function clearAllCookie() {
+        var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (var i = keys.length; i--;)
+                document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+        }
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+body{
+    background-color:rgb(250, 215, 239);
+    background-image: url(/travel.jpg);
+    background-position:center;
+    background-repeat: no-repeat;
+    background-size:80%;
+    background-attachment: fixed;
+    margin-left: 10%;
+}
+.article{
+    width: 70%;
+    min-height: 2000px;
+    background: rgb(221, 220, 220,0.7);
+    margin-top: 30px;
+    margin-left: 13%;
+    padding: 40px 30px;
+}
+.search
+{
+    padding-left: 140px;
+    position: fixed;
+    width: 69%;
+    height: 100px;
+    padding-top: 10px;
+    background-color: rgb(183, 247, 241,0.5);
+    margin-top: 38px;
+    margin-left: 11%;
+}
+.search>#viewinput{height: 30px;width:400px;rotate: 5px;}
+.search>.button{
+    margin-left:21px;
+    height:30px;
+    display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  background-color: transparent;
+  background-image: none;
+  color: #101818;
+  border-color: #a5acb1;
+  padding: .25rem .5rem;
+  line-height: 1.5;
+  border-radius: 1rem;
+  -webkit-appearance: button;
+  cursor:pointer;
+}
+.words{
+    font-family: 仿宋;
+    color: rgb(22, 20, 21);
+    margin-top: 106px;
+}
+.words>#viewimag{
+    position: absolute;
+    margin-left: 49%;
+    margin-top: -11%;
+}
+#cview{
+    padding: 9px 25px;
+}
+.cimage{
+    float: left;
+    width: 300px;
+    height:185px;
+    margin-right: 20px;
+    margin-bottom:20px;
+    border: 2px solid rgb(160, 213, 229,0.9);
+	border-radius: 10px;
+	box-shadow:10px 10px 8px gray;
+}
+.cimage:nth-child(3n){
+    margin-right: 0px;
+}
+.cimage:nth-child(2n-1):hover{
+	box-shadow:0px 0px 0px;
+	transform: rotate(-20deg) scale(1.8);
+	/*添加过渡效果*/
+	transition-duration: 0.5s;
+}
+.cimage:nth-child(2n):hover{
+	box-shadow:0px 0px 0px;
+	transform: rotate(20deg) scale(1.8);
+	/*添加过渡效果*/
+	transition-duration: 0.5s;
+}
+
+#comment-info{position: static} 
+.tach{
+    font-size: 50px;
+    color: rgb(25, 27, 27);
+    font-family: 华文新魏;
+}
+.liuyan{
+    width: 100%; 
+    height:auto!important; 
+    min-height:300px;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    background: rgba(112, 66, 155, 0.7);
+    display:flex;
+    justify-content:flex-start;
+}
+.part2{width: 1150px;padding-top: 4px;padding-bottom:20px;background: rgba(174, 196, 230, 0.7);margin-right: 30px;}
+.part1{width: 190px;padding-top: 4px;padding-bottom:20px;float:left;flex:1;}
+.cportrait{width: 150px;height: 150px;float: left;text-align: center; margin-left: 20px;}
+.cname{width:190px;height: 36px;float: left;padding-left:20px;padding-top: 4px;}
+.ccontent{float: left;padding:15px;}
+.cdate{width:190px;height: 36px;float: left;padding-left:20px;padding-top: 15px;}
+.cscore{width:190px;height: 36px;float: left;padding-left:20px;padding-top: 4px;}
+
+
+

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>旅行足迹系统</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <link rel="stylesheet" href="./header.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            font-size: 16px;
+        }
+
+        #searNearby {
+            width: 1000px;
+            height: 300px;
+            top: 5%
+        }
+
+        .weather {
+            width: 5rem;
+            display: inline-block;
+            padding-left: 0.5rem;
+        }
+
+        .info {
+            padding: 0;
+            border-radius: .25rem;
+            position: absolute;
+            margin-top: 250px;
+            margin-right: 500px;
+            background-color: white;
+            width: auto;
+            min-width: 22rem;
+            border-width: 0;
+            right: 1rem;
+            box-shadow: 0 2px 6px 0 rgba(114, 124, 245, .5);
+        }
+
+        .sharp {
+            height: 1rem;
+            width: 1rem;
+            background-color: white;
+            transform: rotateZ(45deg);
+            box-shadow: 2px 2px 3px rgba(114, 124, 245, .5);
+            position: inherit;
+            margin-left: 10.5rem;
+            margin-top: -6px;
+        }
+
+        .search {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            padding-left: 18px;
+        }
+
+        .search > input {
+            vertical-align: baseline;
+        }
+
+        #getWeather {
+            width: 200px;
+            height: 80px;
+            position: absolute;
+            margin-top: 100px;
+            margin-left: 380px;
+        }
+
+        #getWeather > button {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            margin-left: 18px;
+            padding-left: 13px;
+            padding-right: 13px;
+        }
+
+        #clearallbutton {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            margin-left: 18px;
+            text-align: center;
+        }
+
+        #clearallbutton > button {
+            padding-left: 13px;
+            padding-right: 13px;
+        }
+
+        #panel {
+            position: fixed;
+            background-color: white;
+            max-height: 90%;
+            overflow-y: auto;
+            top: 60px;
+            left: 10px;
+            width: 280px;
+        }
+
+        #panel .amap-call {
+            background-color: #009cf9;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        #panel .amap-lib-driving {
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            overflow: hidden;
+        }
+    </style>
+    <script src="./jquery-1.11.0.min.js"></script>
+    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+    <script type="text/javascript"
+            src="https://webapi.amap.com/maps?v=1.4.15&key=58c1e130c92ca38f524f575edf6b102d&plugin=AMap.Autocomplete&plugin=AMap.Geocoder&plugin=AMap.Driving"></script>
+
+</head>
+
+<body onload="loginCheck()">
+<div id="header">
+    <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
+    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="comment" class="menu">景区详情
+        <ul class="menu">
+            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+        </ul>
+    </div>
+    <div id="heat" class="menu">足迹数据可视化
+        <ul class="menu">
+            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+        </ul>
+    </div>
+    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="/login.html" target="_self">登录</a></div>
+    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="logout">注销</div>
+</div>
+<div id="container"></div>
+<div id="panel"></div>
+<div class="input-card" style="width:48rem;height:23rem">
+    <div id="searchNearby">
+        <p id="address">您当前的位置为：</p>
+        <p id="doubleL address"></p>
+        <p>搜索当前城市周边的景点：</p>
+        <div class="search">
+            <input id="range" type="text" placeholder="请输入范围：0-50千米" style="width:200px">
+            <button class="btn" onclick="searchNearby()" name=serchNearby style="width:100px">搜索</button>
+        </div>
+    </div>
+    <div id="searchSpot">
+        <p>关键字搜索景点(全国范围内)：</p>
+        <div class="search">
+            <input id='tipinput' type="text" placeholder="请输入景点" style="width:200px">
+            <button class="btn" onclick="searchSpot()" name=serchNearby style="width:100px">搜索</button>
+        </div>
+    </div>
+    <div id="getWeather">
+        <p>出行前记得查看天气！
+            <button class="btn" onclick="getweather()" style="margin-left:40px">点击查看天气</button>
+        </p>
+    </div>
+    <div id="clearallbutton">
+        <button class="btn" onclick="clearall()" name="clear" style="width:200px">一键清除所有结果！</button>
+    </div>
+
+</div>
+
+<!-- 天气预报显示框 -->
+<div id="Weather" class="info">
+    <p id='forecast'></p>
+</div>
+
+<script type="text/javascript">
+    var map = new AMap.Map('container', {
+        viewMode: '3D',
+        resizeEnable: true
+    });
+    //地图插件
+    map.plugin(["AMap.Scale"], function () {
+        map.addControl(new AMap.Scale());
+    });
+
+    AMap.plugin([
+        'AMap.ControlBar',
+    ], function () {
+        // 添加 3D 罗盘控制
+        map.addControl(new AMap.ControlBar());
+    });
+
+    AMap.plugin('AMap.Geolocation', function () {
+        var geolocation = new AMap.Geolocation({
+            enableHighAccuracy: true,//是否使用高精度定位，默认:true
+            timeout: 10000,          //超过10秒后停止定位，默认：5s
+            buttonPosition: 'RB',    //定位按钮的停靠位置
+            buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: true,   //定位成功后是否自动调整地图视野到定位点
+
+        });
+        map.addControl(geolocation);
+        geolocation.getCurrentPosition(function (status, result) {
+            if (status == 'complete') {
+                onComplete(result)
+            } else {
+                onError(result)
+            }
+        });
+        AMap.event.addListener(geolocation, 'complete', onComplete); // 返回定位信息
+    });
+
+    //显示当前位置
+    function onComplete(obj) {
+        res = obj.formattedAddress;
+        var before = res.split('市')[0];
+        curCity = before.split('省')[1];
+        curposX = obj.position.getLng();
+        curposY = obj.position.getLat();
+        document.getElementById("address").innerHTML = "您当前的位置为：" + res;
+        document.getElementById("doubleL address").innerHTML = "经度：" + curposX + " &nbsp&nbsp纬度：" + curposY;
+    }
+
+    //周边搜索
+    function searchNearby() {
+        //map.clearMap();
+        AMap.service(["AMap.PlaceSearch"], function () {
+            //构造地点查询类
+            placeSearch = new AMap.PlaceSearch({
+                type: '风景名胜', // 兴趣点类别
+                pageSize: 10, // 单页显示结果条数
+                pageIndex: 1, // 页码
+                city: curCity, // 兴趣点城市
+                citylimit: true,  //是否强制限制在设置的城市内搜索
+                map: map, // 展现结果的地图实例
+                panel: "panel", // 结果列表将在此容器中进行展示。
+                autoFitView: true // 是否自动调整地图视野使绘制的 Marker点都处于视口的可见范围
+            });
+            var d = document.getElementById('range').value * 1000;
+            if (isNaN(d) || d == null || d > 50000 || d <= 0) {
+                alert("请输入正确的搜索范围！")
+            } else {
+                var point = map.getCenter(); //中心点坐标
+                placeSearch.searchNearBy('', point, d, function (status, result) {
+                });
+            }
+        });
+    }
+
+    function clearall() {
+        map.clearMap();
+        var obj1 = document.getElementById('panel');
+        obj1.innerHTML = '';
+        var obj2 = document.getElementById('forecast');
+        obj2.innerHTML = '';
+    }
+
+
+    //输入提示
+    var auto = new AMap.Autocomplete({
+        input: "tipinput"
+    });
+
+    //关键字查询
+    function searchSpot() {
+        AMap.service(["AMap.PlaceSearch"], function () {
+            //构造地点查询类
+            var placeSearch = new AMap.PlaceSearch({
+                pageSize: 5, // 单页显示结果条数
+                pageIndex: 1, // 页码
+                city: "全国", // 兴趣点城市
+                citylimit: true,  //是否强制限制在设置的城市内搜索
+                map: map, // 展现结果的地图实例
+                panel: "panel", // 结果列表将在此容器中进行展示。
+                autoFitView: true // 是否自动调整地图视野使绘制的 Marker点都处于视口的可见范围
+            });
+            placeSearch.search(document.getElementById('tipinput').value);
+        });
+    }
+
+    //未来4天天气预报
+    function getweather() {
+        AMap.plugin('AMap.Weather', function () {
+            var weather = new AMap.Weather();
+            //查询实时天气信息, 查询的城市到行政级别的城市，如朝阳区、杭州市
+            weather.getLive(curCity, function (err, data) {
+                if (!err) {
+                    var str = [];
+                    str.push('<h4 >实时天气' + '</h4><hr>');
+                    str.push('<p>城市/区：' + data.city + '</p>');
+                    str.push('<p>天气：' + data.weather + '</p>');
+                    str.push('<p>温度：' + data.temperature + '℃</p>');
+                    str.push('<p>风向：' + data.windDirection + '</p>');
+                    str.push('<p>风力：' + data.windPower + ' 级</p>');
+                    str.push('<p>空气湿度：' + data.humidity + '</p>');
+                    str.push('<p>发布时间：' + data.reportTime + '</p>');
+                    var marker = new AMap.Marker({map: map, position: map.getCenter()});
+                    var infoWin = new AMap.InfoWindow({
+                        content: '<div class="info" style="position:inherit;margin-bottom:0;">' + str.join('') + '</div><div class="sharp"></div>',
+                        isCustom: true,
+                        offset: new AMap.Pixel(0, -37)
+                    });
+                    infoWin.open(map, marker.getPosition());
+                    marker.on('mouseover', function () {
+                        infoWin.open(map, marker.getPosition());
+                    });
+                }
+            });
+
+            weather.getForecast(curCity, function (err, data) {
+                if (err) {
+                    return;
+                }
+                var str = [];
+                for (var i = 0, dayWeather; i < data.forecasts.length; i++) {
+                    dayWeather = data.forecasts[i];
+                    str.push(dayWeather.date + ' <span class="weather">' + dayWeather.dayWeather + '</span> ' + dayWeather.nightTemp + '~' + dayWeather.dayTemp + '℃');
+                }
+                document.getElementById('forecast').innerHTML = "<h4>天气预报</h4>" + str.join('<br>');
+            });
+        });
+    }
+
+    //点击地图显示窗口
+    //构建自定义信息窗体
+    var infoWindow = new AMap.InfoWindow({
+        anchor: 'middle-left',
+        content: '这是信息窗体！这是信息窗体！',
+    });
+
+    var geocoder = new AMap.Geocoder({
+        city: "全国",
+    });
+
+    function setAnchor() {
+        var anchor = this.id;
+        infoWindow.setAnchor(anchor)
+    }
+
+    //绑定radio点击事件
+    var radios = document.querySelectorAll("#coordinate input");
+    radios.forEach(function (ratio) {
+        ratio.onclick = setAnchor;
+    });
+
+    function showInfoClick(e) {
+        infoWindow.close();
+        var address;
+        geocoder.getAddress(e.lnglat.getLng() + ',' + e.lnglat.getLat(), function (status, result) {
+            if (status === 'complete' && result.regeocode) {
+                address = result.regeocode.formattedAddress;
+                longitude = e.lnglat.getLng();
+                latitude = e.lnglat.getLat();
+                infoWindow.setContent('<span>[' + e.lnglat.getLng() + ',' + e.lnglat.getLat() + ']</span><br/><input name="site" value="' + address + '"/  readonly><br/><button class="button" onclick="getRoute()" name="getRoute">去这里</button><p>选择路径规划模式：</p><select id="model" style="font-size:12px"><option value="1">速度最快</option><option value="2">费用最低</option><option value="3">距离最短</option><option value="4">考虑实时路况</option></select>')
+                infoWindow.open(map, [e.lnglat.getLng(), e.lnglat.getLat()])
+            } else {
+                alert("暂不支持获取境外信息！")
+            }
+        });
+    }
+
+    // 事件绑定 
+    map.on('click', showInfoClick);
+
+
+    //路径规划
+    function getRoute() {
+        clearall();
+        var a = document.getElementById('model').value;
+        a = parseInt(a);
+        AMap.plugin('AMap.Driving', function () {
+            switch (a) {
+                case 1:
+                    var driving = new AMap.Driving({
+                        policy: AMap.DrivingPolicy.LEAST_TIME,
+                        map: map,
+                        panel: 'panel'
+                    })
+                    break;
+                case 2:
+                    var driving = new AMap.Driving({
+                        policy: AMap.DrivingPolicy.LEAST_FEE,
+                        map: map,
+                        panel: 'panel'
+                    })
+                    break;
+                case 3:
+                    var driving = new AMap.Driving({
+                        policy: AMap.DrivingPolicy.LEAST_DISTANCE,
+                        map: map,
+                        panel: 'panel'
+                    })
+                    break;
+                default:
+                    var driving = new AMap.Driving({
+                        policy: AMap.DrivingPolicy.REAL_TRAFFIC,
+                        map: map,
+                        panel: 'panel'
+                    })
+            }
+            var startLngLat = [curposX, curposY]
+            var endLngLat = [longitude, latitude]
+
+
+            driving.search(startLngLat, endLngLat, function (status, result) {
+                // 未出错时，result即是对应的路线规划方案
+                if (status === 'complete') {
+                    log.success('绘制驾车路线完成')
+                } else {
+                    log.error('获取驾车数据失败：' + result)
+                }
+            })
+        })
+    }
+
+    $('#logout').on('click', logout);
+
+    function loginCheck() {
+        userName = getCookie("userName");
+        if (userName == null || userName == "") {
+            document.getElementById("logout").style.display = "none";
+        } else {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("register").style.display = "none";
+            var logout = document.getElementById("logout");
+            logout.innerText = "欢迎回来：" + userName;
+            logout.style = "color:white";
+        }
+
+
+    }
+
+    function logout() {
+        var check = confirm("您确定要注销吗？");
+        if (!check)
+            return;
+
+        clearAllCookie();
+        var res;
+        $.ajax({
+            type: "GET",
+            url: "/login",
+            data: {affirm: "1"},
+            dataType: "text",
+            async: false,
+            success: function (result) {
+                res = JSON.parse(result);
+            },
+            error: function (e) {
+                alert("注销失败，请检查网络或重试");
+            }
+        });
+        if (res.result == 1 || res.result == -1) {
+            alert(res.message);
+            return;
+        }
+        alert(res.message);
+        window.location.href = "/index.html";
+
+
+    }
+
+    function getCookie(name) {
+        var prefix = name + "="
+        var start = document.cookie.indexOf(prefix)
+
+        if (start == -1) {
+            return null;
+        }
+
+        var end = document.cookie.indexOf(";", start + prefix.length)
+        if (end == -1) {
+            end = document.cookie.length;
+        }
+
+        var value = document.cookie.substring(start + prefix.length, end)
+        return unescape(value);
+    }
+
+    function clearAllCookie() {
+        var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (var i = keys.length; i--;)
+                document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+        }
+    }
+
+</script>
+</body>
+
+</html>

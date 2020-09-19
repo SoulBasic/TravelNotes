@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景点信息</title>
+    <link rel="stylesheet" href="./header.css">
+    <link rel="stylesheet" href="./viewsearch.css">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <script src="./jquery-1.11.0.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body onload="loginCheck()">
+<div id="header">
+    <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
+    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="comment" class="menu">景区详情
+        <ul class="menu">
+            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+        </ul>
+    </div>
+    <div id="heat" class="menu">足迹数据可视化
+        <ul class="menu">
+            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+        </ul>
+    </div>
+    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="/login.html" target="_self">登录</a></div>
+    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="logout">注销</div>
+</div>
+<div class="search" id="searchZone">
+    <input id="viewinput" type="text" placeholder="请输入景点名称">
+    <button class="button" onclick="searchview()" name=searchview>搜索</button>
+    <p id="detailsearch"></p>
+</div>
+<div class="article">
+
+    <div class="words">
+        <h1 id="viewname"></h1>
+        <h2 id="viewtype"></h2>
+        <h2 id="viewcity"></h2>
+        <h2 id="viewlocation"></h2>
+        <h2 id="viewprice"></h2>
+        <h2 id="viewbrief"></h2>
+        <h2 id="viewscore"></h2>
+        <h2 id="viewcompct"></h2>
+        <div id="viewimag"></div>
+
+    </div>
+    <div class="tach">评论区：</div>
+    <div id="comment-info">
+        <div class="liuyan">
+            <div class="part1">
+                <div class="cname">亲爱的小编</div>
+                <div class="cportrait"><img src="/default.JPG" style='width:150px;height:150px'></div>
+                <div class="cdate">2020.7.22</div>
+                <div class="cscore">景区评分：5/5</div>
+            </div>
+            <div class='part2'>
+                <div class="ccontent">快来看看其他人怎么评论吧！</div>
+            </div>
+        </div>
+    </div>
+    <div id="cview"></div>
+</div>
+
+
+<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.15&key=58c1e130c92ca38f524f575edf6b102d&plugin=AMap.Geocoder"></script>
+<script>
+    function clearinfo() {
+        $("input").attr("value", "");
+        $('#comment-info').html('');
+        $('#viewname').html('');
+        $('#viewtype').html('');
+        $('#viewcity').html('');
+        $('#viewlocation').html('');
+        $('#viewprice').html('');
+        $('#viewbrief').html('');
+        $('#viewscore').html('');
+        $('#viewcompct').html('');
+        $('#viewimag').html('');
+        $('#cview').html('');
+    }
+
+    function clearSearchDiv() {
+        $('#searchZone').html("    <input id=\"viewinput\" type=\"text\" placeholder=\"请输入景点名称\">\n" +
+            "    <button class=\"button\" onclick=\"searchview()\" name=searchview>搜索</button>\n" +
+            "    <button class=\"button\" onclick=\"clearinfo()\" name=clear>清空</button>\n" +
+            "    <p id=\"detailsearch\"></p>");
+
+    }
+</script>
+<script type="text/javascript">
+
+    $('#logout').on('click', logout);
+    function loginCheck() {
+        userName = getCookie("userName");
+        if (userName == null || userName == "") {
+            document.getElementById("logout").style.display = "none";
+        } else {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("register").style.display = "none";
+            var logout = document.getElementById("logout");
+            logout.innerText = "欢迎回来：" + userName;
+            logout.style = "color:white";
+        }
+
+
+    }
+
+    function logout() {
+        var check = confirm("您确定要注销吗？");
+        if (!check)
+            return;
+
+        clearAllCookie();
+        var res;
+        $.ajax({
+            type: "GET",
+            url: "/login",
+            data: {affirm: "1"},
+            dataType: "text",
+            async: false,
+            success: function (result) {
+                res = JSON.parse(result);
+            },
+            error: function (e) {
+                alert("注销失败，请检查网络或重试");
+            }
+        });
+        if (res.result == 1 || res.result == -1) {
+            alert(res.message);
+            return;
+        }
+        alert(res.message);
+        window.location.href = "/index.html";
+
+
+    }
+
+    function getCookie(name) {
+        var prefix = name + "="
+        var start = document.cookie.indexOf(prefix)
+
+        if (start == -1) {
+            return null;
+        }
+
+        var end = document.cookie.indexOf(";", start + prefix.length)
+        if (end == -1) {
+            end = document.cookie.length;
+        }
+
+        var value = document.cookie.substring(start + prefix.length, end)
+        return unescape(value);
+    }
+
+    function clearAllCookie() {
+        var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (var i = keys.length; i--;)
+                document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+        }
+    }
+
+    function search(spotName) {
+        var id;
+        clearSearchDiv();
+        $.ajax({
+            type: "GET",
+            url: "./spots",
+            data: {spotname: spotName},
+            dataType: "text",
+            async: false,
+            success: function (result) {
+                result = JSON.parse(result);
+                if (result.result == 1 || result.result == -1) {
+                    alert(result.message);
+                    document.getelementbyID("viewinput").value = " ";
+                    return;
+                } else {
+                    id = result.id;
+                    var name = result.word;
+                    var eName = result.eName;
+                    var type = result.type;
+                    var districtName = result.districtName;
+                    var price = result.price;
+                    var alias = result.alias;
+                    var address = result.address;
+                    var imageUrl = result.imageUrl;
+                    viewname.innerHTML = "<br>景区名称：" + name + "&nbsp&nbsp&nbsp&nbsp景区英文名称：" + eName;
+                    viewtype.innerHTML = "景区类型：" + type;
+                    viewcity.innerHTML = "所属城市：" + districtName;
+                    viewlocation.innerHTML = "景区地址：" + address;
+                    viewprice.innerHTML = "门票价格：" + price;
+                    viewbrief.innerHTML = "简介：" + alias;
+                    var vimagepart = document.getElementById("viewimag");
+                    var vimg = document.createElement('img');
+                    vimg.setAttribute('src', imageUrl);
+                    vimg.setAttribute('width', '300');
+                    vimg.setAttribute('height', '192');
+                    vimagepart.appendChild(vimg);
+                    var div = document.getElementById("searchZone");
+                    var lab = document.createElement("p");
+                    lab.innerText = "您要找的是不是：";
+                    div.appendChild(lab);
+                    for(var j in result.otherSpots){
+                        //alert(result.otherSpots[j].word);
+                        if(result.name != result.otherSpots[j].word){
+                            var temp;
+                            temp = document.createElement("button");
+                            temp.setAttribute("class","button");
+                            var tempName = result.otherSpots[j].word;
+
+                            temp.innerText = tempName;
+                            temp.onclick = function (){
+                                var tmp = this.innerText;
+                                clearinfo();
+                                search(tmp);
+
+                            }
+                            div.appendChild(temp);
+                        }
+
+                    }
+
+                }
+            },
+            error: function (e) {
+                alert("上传失败，请检查网络或重试");
+            }
+        });
+
+
+        $.ajax({
+            type: "GET",
+            url: "./spots/comments",
+            data: {spotname: spotName, spotid: id},
+            dataType: "text",
+            success: function (result) {
+                result = JSON.parse(result);
+                if (result.result == 1 || result.result == -1) {
+                    alert(result.message);
+                    document.getelementbyID("viewinput").value = " ";
+                    return;
+                } else {
+                    var cmtscore = result.data.cmtscore;
+                    var recompct = result.data.recompct;
+                    var comments = result.data.comments;
+                    viewscore.innerHTML = "景区评分：" + cmtscore + "/5";
+                    viewcompct.innerHTML = "景区推荐指数：" + recompct;
+                    for (var i in comments) {
+                        addComment("comment-info", i, comments[i]);
+                    }
+                }
+            },
+            error: function (e) {
+                alert("上传失败，请检查网络或重试");
+            }
+        });
+    }
+    function searchview() {
+        clearinfo();
+        var spotName = document.getElementById("viewinput").value;
+        search(spotName);
+
+    }
+
+
+    function addComment(obj, id, comment) {
+        var uid = comment.uid;
+        var userImage = comment.userImage;
+        var title = comment.title;
+        var content = comment.content;
+        var date = comment.date;
+        var score = comment.score;
+        var bimgs = comment.bimgs;
+
+        var demo = document.getElementById(obj);
+        var div = document.createElement('div');
+        div.setAttribute('class', 'liuyan');
+
+        var intro = document.createElement('div');
+        var infor = document.createElement('div');
+        intro.setAttribute('class', 'part1');
+        infor.setAttribute('class', 'part2');
+
+
+        var div1 = document.createElement('div');
+        var div2 = document.createElement('div');
+        var div3 = document.createElement('div');
+        var div4 = document.createElement('div');
+        var div5 = document.createElement('div');
+        div1.setAttribute('class', 'cname');
+        div2.setAttribute('class', 'cportrait');
+        div3.setAttribute('class', 'ccontent');
+        div4.setAttribute('class', 'cdate');
+        div5.setAttribute('class', 'cscore');
+        intro.appendChild(div1);
+        intro.appendChild(div2);
+        infor.appendChild(div3);
+        intro.appendChild(div4);
+        intro.appendChild(div5);
+
+        div1.innerHTML = uid;
+        div3.innerHTML = content;
+        div4.innerHTML = date;
+        div5.innerHTML = "景区评分：" + score + "/5";
+
+        var img = document.createElement('img');
+        img.setAttribute('src', userImage);
+        img.setAttribute('width', '150');
+        img.setAttribute('height', '150');
+        div2.appendChild(img);
+
+        div.appendChild(intro);
+        div.appendChild(infor);
+        demo.appendChild(div);
+        for (var j in bimgs) {
+            addImage(bimgs[j]);
+        }
+    }
+
+    function addImage(bimg) {
+        var imagepart = document.getElementById("cview");
+        var vimg = document.createElement('img');
+        vimg.setAttribute('class', 'cimage');
+        vimg.setAttribute('src', bimg);
+        vimg.setAttribute('width', '150');
+        vimg.setAttribute('height', '150');
+        imagepart.appendChild(vimg);
+    }
+</script>
+</body>
+
+</html>

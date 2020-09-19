@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="./header.css">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <script src="./jquery-1.11.0.min.js"></script>
+    <title>三维路径图</title>
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #showPaths{right:500px;top:25%;height:25px;width:100px;position:absolute;background: #002147;padding:3px;text-align: center;border:1px solid #6699CC; border-radius: 10px;font-size:12px;}
+        .menu:hover,#showPaths:hover{background: gray}
+    </style>
+
+
+</head>
+
+<body onload="reveal()">
+<div id="header">
+    <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
+    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="comment" class="menu">景区详情
+        <ul class="menu">
+            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+        </ul>
+    </div>
+    <div id="heat" class="menu">足迹数据可视化
+        <ul class="menu">
+            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+        </ul>
+    </div>
+    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="/login.html" target="_self">登录</a></div>
+    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="logout">注销</div>
+    <div id="showPaths"><font color="white">显示三维路径</font></div>
+
+</div>
+
+<div id="container"></div>
+
+
+<script src="./jquery-1.11.0.min.js"></script>
+<script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.15&key=58c1e130c92ca38f524f575edf6b102d&plugin=AMap.Geocoder&plugin=Map3D,AMap.DistrictSearch"></script>
+<script src="https://webapi.amap.com/ui/1.1/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.16.0/math.min.js"></script>
+<script>
+
+    var map;
+    var addr = [];
+    var num = 0;
+    var geocoder;
+    var lnglat;
+    var positions = new Map();
+    var object3Dlayer;
+    var trips;
+    $('#logout').on('click', logout);
+    $('#showPaths').on('click', showPaths);
+
+
+    function loginCheck() {
+        userName = getCookie("userName");
+        if (userName == null || userName == "") {
+            document.getElementById("logout").style.display = "none";
+        } else {
+            document.getElementById("login").style.display = "none";
+            document.getElementById("register").style.display = "none";
+            var logout = document.getElementById("logout");
+            logout.innerText = "欢迎回来：" + userName;
+            logout.style = "color:white";
+        }
+
+
+    }
+
+    function logout() {
+        var check = confirm("您确定要注销吗？");
+        if (!check)
+            return;
+
+        clearAllCookie();
+        var res;
+        $.ajax({
+            type: "GET",
+            url: "/login",
+            data: {affirm: "1"},
+            dataType: "text",
+            async: false,
+            success: function (result) {
+                res = JSON.parse(result);
+            },
+            error: function (e) {
+                alert("注销失败，请检查网络或重试");
+            }
+        });
+        if (res.result == 1 || res.result == -1) {
+            alert(res.message);
+            return;
+        }
+        alert(res.message);
+        window.location.href = "/index.html";
+
+
+    }
+
+    function getCookie(name) {
+        var prefix = name + "="
+        var start = document.cookie.indexOf(prefix)
+
+        if (start == -1) {
+            return null;
+        }
+
+        var end = document.cookie.indexOf(";", start + prefix.length)
+        if (end == -1) {
+            end = document.cookie.length;
+        }
+
+        var value = document.cookie.substring(start + prefix.length, end)
+        return unescape(value);
+    }
+
+    function clearAllCookie() {
+        var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (var i = keys.length; i--;)
+                document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString()
+        }
+    }
+
+    function getPoints(start, end) {
+        var midLng = (start.getLng() + end.getLng()) / 2;
+        var midLat = (start.getLat() + end.getLat()) / 2;
+
+        var points = [
+            start,
+            new AMap.LngLat(midLng,midLat),
+            new AMap.LngLat(midLng,midLat),
+            end
+        ];
+        return points;
+    }
+
+    function getSize(start,end) {
+            var p1 = start;
+            var p2 = end;
+            var textPos = p1.divideBy(2).add(p2.divideBy(2));
+            return Math.round(p1.distance(p2))*1.2;
+    }
+
+    function reveal() {
+        loginCheck();
+        map = new AMap.Map('container', {
+            viewMode: '3D',
+            pitch: 50,
+            zoom: 8,
+            center: [116.480766, 39.932931]
+        });
+
+        $.ajax({
+            type: "GET",
+            url: "/trips",
+            data: {},
+            dataType: "text",
+            success: function (result) {
+                trips = JSON.parse(result);
+                if (trips.result == 1 || trips.result == -1) {
+                    alert(trips.message);
+                    return;
+                }
+                for (var i in trips) {
+                    if(!trips.hasOwnProperty(i)) continue;
+                    position = new AMap.LngLat(trips[i].longitude, trips[i].latitude);
+                    positions.set(i,position);
+                    highlightpoint(position, map, i);
+                }
+                for (var p = 0; p < trips.length; p += 1) {
+                    var center = lnglatToG20(provinces[p].center);
+                    var size = Math.max(10, Math.round(Math.random() * 40));
+                    var height = -size * 100000;
+                }
+
+
+
+            },
+            error: function (e) {
+                alert("上传失败，请检查网络或重试");
+            }
+
+
+
+        });
+
+        map.AmbientLight = new AMap.Lights.AmbientLight([1, 1, 1], 0.5);
+        map.DirectionLight = new AMap.Lights.DirectionLight([0, 0, 1], [1, 1, 1], 1);
+
+        object3Dlayer = new AMap.Object3DLayer();
+        map.add(object3Dlayer);
+
+        // var longitude = [114.710711, 120.950946, 123.30202];
+        // var latitude = [38.774156, 37.10201, 44.491358];
+
+
+    }
+
+    function showPaths() {
+
+        for(var i=0;i<positions.size;i++){
+            if(i!=0){
+                var numberOfPoints = 180;
+                var minHeight = 20;
+                var pointsPara = getPoints(positions.get((i-1).toString()),positions.get(i.toString()));
+                var meshLine = new AMap.Object3D.MeshLine({
+                    path: computeBezier(pointsPara, numberOfPoints, minHeight),
+                    height: getEllipseHeight(numberOfPoints,getSize(positions.get((i-1).toString()),positions.get(i.toString())), minHeight),
+                    color: 'rgba(55,129,240, 0.9)',
+                    width: 20
+                });
+
+                meshLine.transparent = true;
+                object3Dlayer.add(meshLine);
+                meshLine['backOrFront'] = 'both';
+                map.add(object3Dlayer);
+            }
+
+
+        }
+
+        alert("路径加载完成");
+
+    }
+
+
+    function highlightpoint(position, map, i) {
+        num = i;
+        geocoder = new AMap.Geocoder({
+            city: "010", //城市设为北京，默认：“全国”
+            radius: 1000 //范围，默认：500
+        });
+        lnglat = position;
+        geocoder.getAddress(lnglat, function (status, result) {
+            if (status === 'complete' && result.regeocode) {
+                var ad = result.regeocode.addressComponent.citycode;
+                new AMap.DistrictSearch({
+                    subdistrict: 0,   //返回下一级行政区
+                    extensions: 'all',  //返回行政区边界坐标组等具体信息
+                    level: 'city'  //查询行政级别为 市
+                }).search(ad, function (status, result) {
+                    var bounds = result.districtList[0].boundaries;
+                    var height = 5000;
+                    var color = '#0088ffcc'; // rgba
+                    var prism = new AMap.Object3D.Prism({
+                        path: bounds,
+                        height: height,
+                        color: color
+                    });
+                    prism.transparent = true;
+                    object3Dlayer.add(prism);
+
+
+                });
+            } else {
+                log.error('根据经纬度查询地址失败')
+            }
+        });
+
+    }
+
+
+    function pointOnCubicBezier(cp, t) {
+        var ax, bx, cx;
+        var ay, by, cy;
+        var tSquared, tCubed;
+
+        cx = 3.0 * (cp[1].lng - cp[0].lng);
+        bx = 3.0 * (cp[2].lng - cp[1].lng) - cx;
+        ax = cp[3].lng - cp[0].lng - cx - bx;
+
+        cy = 3.0 * (cp[1].lat - cp[0].lat);
+        by = 3.0 * (cp[2].lat - cp[1].lat) - cy;
+        ay = cp[3].lat - cp[0].lat - cy - by;
+
+        tSquared = t * t;
+        tCubed = tSquared * t;
+
+        var lng = (ax * tCubed) + (bx * tSquared) + (cx * t) + cp[0].lng;
+        var lat = (ay * tCubed) + (by * tSquared) + (cy * t) + cp[0].lat;
+
+        return new AMap.LngLat(lng, lat);
+    }
+
+    function computeBezier(points, numberOfPoints) {
+        var dt;
+        var i;
+        var curve = [];
+
+        dt = 1.0 / (numberOfPoints - 1);
+
+        for (i = 0; i < numberOfPoints; i++) {
+            curve[i] = pointOnCubicBezier(points, i * dt);
+        }
+
+        return curve;
+    }
+
+    function getEllipseHeight(count, maxHeight, minHeight) {
+        var height = [];
+        var radionUnit = Math.PI / 180;
+
+        for (var i = 0; i < count; i++) {
+            var radion = i * radionUnit;
+
+            height.push(minHeight + Math.sin(radion) * maxHeight);
+        }
+
+        return height;
+    }
+
+    function update() {
+        var width = +document.querySelector('#widthInput').value;
+        var maxHeight = +document.querySelector('#heightInput').value;
+
+        if (width > 0) {
+            meshLine.setWidth(width);
+        } else {
+            document.querySelector('#widthInput').value = 20;
+        }
+
+        if (maxHeight >= 1000) {
+            meshLine.setHeight(getEllipseHeight(numberOfPoints, maxHeight, minHeight));
+        } else {
+            document.querySelector('#heightInput').value = 2000000;
+        }
+    }
+
+</script>
+</body>
+
+</html>
