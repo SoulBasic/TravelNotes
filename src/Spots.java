@@ -48,7 +48,7 @@ public class Spots extends HttpServlet {
         }
         temp = spots.get(usefulIndex);
         if(temp.imageUrl == null){
-            temp.imageUrl = "/404ImgNotFound.PNG";
+            temp.imageUrl = "./404ImgNotFound.PNG";
         }
         int count = 0;
         OtherSpot os = null;
