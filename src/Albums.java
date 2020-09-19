@@ -190,7 +190,7 @@ public class Albums extends HttpServlet {
         fileOutputStream.close();
 
         GISWEBUtil.log("用户 " + (String)ss.getAttribute("userName") + " 为"+tripIndex+"号行程添加了音乐相册");
-        resp.sendRedirect("/albums/"+tripIndex+"/MusicAlbum.html");
+        resp.sendRedirect("./albums/"+tripIndex+"/MusicAlbum.html");
 
 
     }

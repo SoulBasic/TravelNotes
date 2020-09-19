@@ -10,20 +10,24 @@ public class AutoCheckTask extends TimerTask {
 
     public Connection con;
     public ServletContext servletContext;
-    public AutoCheckTask(Connection con, ServletContext servletContext) {
+    public String host;
+    public String userName;
+    public String passWord;
+
+    public AutoCheckTask(Connection con, ServletContext servletContext, String host, String userName, String passWord) {
         this.con = con;
         this.servletContext = servletContext;
+        this.host = host;
+        this.userName = userName;
+        this.passWord = passWord;
     }
+
 
     @Override
     public void run() {
         try {
             System.out.println("服务器自刷新mysql连接");
             con.close();
-            ResourceBundle rb = ResourceBundle.getBundle("dbcfg");
-            String host = rb.getString("host");
-            String userName = rb.getString("username");
-            String passWord = rb.getString("password");
             Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection(host, userName, passWord);
             servletContext.setAttribute("connection", con);

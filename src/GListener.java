@@ -25,7 +25,7 @@ public class GListener implements ServletContextListener {
             svtcontext.setAttribute("connection", con);
             Timer timer = new Timer();
             System.out.println("服务器开启");
-            AutoCheckTask autoCheckTask = new AutoCheckTask(con,sce.getServletContext());
+            AutoCheckTask autoCheckTask = new AutoCheckTask(con,sce.getServletContext(),host,userName,passWord);
             timer.schedule(autoCheckTask, 10000, 600000);
         } catch (SQLException throwables) {
             throwables.printStackTrace();

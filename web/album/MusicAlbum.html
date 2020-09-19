@@ -6,32 +6,32 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="icon" href="favicon.ico"/>
+  <link rel="icon" href="./favicon.ico"/>
   <link rel="stylesheet" type="text/css" href="./styles/common.css">
   <script type="text/javascript" src="https://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
   <script type="text/javascript" src="https://cdn.bootcss.com/jplayer/2.9.2/jplayer/jquery.jplayer.min.js"></script>
-  <link href="/header.css" rel="stylesheet">
+  <link href="./header.css" rel="stylesheet">
   <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
 </head>
 <body onload="loginCheck()">
   <div id="header">
-    <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
-    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="spot" class="menu"><a href=".../index.html" target="_self">景点查询</a></div>
+    <div id="track" class="menu"><a href=".../trips.html" target="_self">足迹地图</a></div>
     <div id="comment" class="menu">景区详情
         <ul class="menu">
-            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
-            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+            <li><a href=".../getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href=".../heatmap.html" target="_self">景区热力图</a></li>
         </ul>
     </div>
     <div id="heat" class="menu">足迹数据可视化
         <ul class="menu">
-            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
-            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+            <li><a href=".../trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href=".../getHotMap.html" target="_self">足迹热力图</a></li>
         </ul>
     </div>
-    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
-    <div id="login"><a href="/login.html" target="_self">登录</a></div>
-    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="bill" class="menu"><a href=".../bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href=".../login.html" target="_self">登录</a></div>
+    <div id="register"><a href=".../register.html" target="_self">注册</a></div>
     <div id="logout">注销</div>
   </div>
 
@@ -64,7 +64,7 @@
         var res;
         $.ajax({
             type: "GET",
-            url: "/login",
+            url: ".../login",
             data: {affirm: "1"},
             dataType: "text",
             async: false,
@@ -81,7 +81,7 @@
         }
         alert(res.message);
         clearAllCookie();
-        window.location.href = "/index.html";
+        window.location.href = ".../index.html";
 
 
     }
