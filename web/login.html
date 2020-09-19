@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>登录_个人旅行足迹系统</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="lore.css" rel="stylesheet"/>
+    <link href="./lore.css" rel="stylesheet"/>
     <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/lib/jquery.js"></script>
     <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
     <script src="https://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
@@ -13,7 +13,7 @@
             submitHandler: function() {
             //AJAX代码
 
-            $.post("/login", {
+            $.post("./login", {
                 username: document.getElementById("username").value,
                 password: document.getElementById("password").value
                 }, function (data) {
@@ -26,7 +26,7 @@
                     }
                     if (data.result == 0) {
                         alert("登录成功！");
-                        window.location.href="/index.html";
+                        window.location.href="./index.html";
                     } 
                 }
             )
@@ -84,9 +84,9 @@
                             <input type="submit" class="btn-submit"  value="登录"/>
                             <div class="loginInfo">
                                 <div class="centertext">
-                                    <a href="register.html">注册账号</a>
+                                    <a href="./register.html">注册账号</a>
                                     <span class="sep">|</span>
-                                    <a href="repass.html">重置密码</a>
+                                    <a href="./repass.html">重置密码</a>
                                 </div>
                             </div>
                         </li>

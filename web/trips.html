@@ -138,22 +138,22 @@
 <body  onload="loginCheck()">
 <div id="header">
     <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
-    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="track" class="menu"><a href="./trips.html" target="_self">足迹地图</a></div>
     <div id="comment" class="menu">景区详情
         <ul class="menu">
-            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
-            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+            <li><a href="./getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="./heatmap.html" target="_self">景区热力图</a></li>
         </ul>
     </div>
     <div id="heat" class="menu">足迹数据可视化
         <ul class="menu">
-            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
-            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+            <li><a href="./trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="./getHotMap.html" target="_self">足迹热力图</a></li>
         </ul>
     </div>
-    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
-    <div id="login"><a href="/login.html" target="_self">登录</a></div>
-    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="bill" class="menu"><a href="./bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="./login.html" target="_self">登录</a></div>
+    <div id="register"><a href="./register.html" target="_self">注册</a></div>
     <div id="logout">注销</div>
 
 </div>
@@ -269,7 +269,7 @@
         var res;
         $.ajax({
             type: "GET",
-            url: "/login",
+            url: "./login",
             data: {affirm: "1"},
             dataType: "text",
             async: false,
@@ -285,7 +285,7 @@
             return;
         }
         alert(res.message);
-        window.location.href = "/index.html";
+        window.location.href = "./index.html";
 
 
     }
@@ -379,13 +379,13 @@
         if (isSelf == 1) {
             var marker = new AMap.Marker({
                 position: position,
-                icon: '/self_marker.png',
+                icon: './self_marker.png',
                 imageSize: new AMap.Size(40, 20)
             });
         } else {
             var marker = new AMap.Marker({
                 position: position,
-                icon: '/others_marker.png',
+                icon: './others_marker.png',
                 imageSize: new AMap.Size(40, 20)
             });
 
@@ -402,7 +402,7 @@
             var photos;
             $.ajax({
                 type: "GET",
-                url: "/photos",
+                url: "./photos",
                 data: {tripindex: trips[index].tripIndex},
                 dataType: "text",
                 async: false,
@@ -459,7 +459,7 @@
                 if (check) {
                     $.ajax({
                         type: "GET",
-                        url: "/trips/delete",
+                        url: "./trips/delete",
                         data: {tripindex: trips[index].tripIndex},
                         dataType: "text",
                         success: function (result) {
@@ -485,11 +485,11 @@
                 //音乐相册
                 $.ajax({
                     type: "GET",
-                    url: "/albums",
+                    url: "./albums",
                     data: {tripindex:trips[index].tripIndex},
                     dataType: "text",
                     success: function () {
-                        window.location.href="/albums/"+trips[index].tripIndex+"/MusicAlbum.html";
+                        window.location.href="./albums/"+trips[index].tripIndex+"/MusicAlbum.html";
                     },
                     error: function (e) {
                         alert("生成失败，请检查网络或重试");
@@ -525,7 +525,7 @@
         point = [];
         $.ajax({
             type: "GET",
-            url: "/trips",
+            url: "./trips",
             data: {},
             dataType: "text",
             success: function (result) {
@@ -554,7 +554,7 @@
         point = [];
         $.ajax({
             type: "GET",
-            url: "/trips/all",
+            url: "./trips/all",
             data: {},
             dataType: "text",
             success: function (result) {
@@ -645,7 +645,7 @@
                 pub = 1;
             var location = document.getElementById("location").value;
 
-            $.post("/trips", {
+            $.post("./trips", {
                     longitude: longitude,
                     latitude: latitude,
                     triptime: triptime,
@@ -674,7 +674,7 @@
             document.getElementById("tripIndexTag").value = nowUse.tripIndex;
             var form = new FormData(document.getElementById("form"));
             $.ajax({
-                url: "/photos",
+                url: "./photos",
                 type: "post",
                 data: form,
                 cache: false,

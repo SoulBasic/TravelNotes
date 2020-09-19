@@ -17,7 +17,7 @@
             $("#hovertable tr:not(:first)").empty();
             $.ajax({
                 type: "GET",
-                url: "/bills",
+                url: "./bills",
                 data: {
                     starttime: document.getElementById("startyear").value + "年" + document.getElementById("startmonth").value + "月" + document.getElementById("startday").value + "日",
                     endtime: document.getElementById("endyear").value + "年" + document.getElementById("endmonth").value + "月" + document.getElementById("endday").value + "日",
@@ -112,7 +112,7 @@
                     var index=myselect.selectedIndex ; // selectedIndex代表的是你所选中项的index
                     var purposet = myselect.options[index].value;//获取选中项的value
 
-                    $.post("/bills", {
+                    $.post("./bills", {
                             location: location,
                             cost: cost,
                             billtime: billtime,
@@ -168,22 +168,22 @@
 <body  onload="loginCheck()">
 <div id="header">
     <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
-    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="track" class="menu"><a href="./trips.html" target="_self">足迹地图</a></div>
     <div id="comment" class="menu">景区详情
         <ul class="menu">
-            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
-            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+            <li><a href="./getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="./heatmap.html" target="_self">景区热力图</a></li>
         </ul>
     </div>
     <div id="heat" class="menu">足迹数据可视化
         <ul class="menu">
-            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
-            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+            <li><a href="./trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="./getHotMap.html" target="_self">足迹热力图</a></li>
         </ul>
     </div>
-    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
-    <div id="login"><a href="/login.html" target="_self">登录</a></div>
-    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="bill" class="menu"><a href="./bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="./login.html" target="_self">登录</a></div>
+    <div id="register"><a href="./register.html" target="_self">注册</a></div>
     <div id="logout">注销</div>
 </div>
 
@@ -299,7 +299,7 @@
         var res;
         $.ajax({
             type: "GET",
-            url: "/login",
+            url: "./login",
             data: {affirm: "1"},
             dataType: "text",
             async: false,
@@ -315,7 +315,7 @@
             return;
         }
         alert(res.message);
-        window.location.href = "/index.html";
+        window.location.href = "./index.html";
 
 
     }

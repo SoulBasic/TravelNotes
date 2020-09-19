@@ -28,22 +28,22 @@
 <body onload="reveal()">
 <div id="header">
     <div id="spot" class="menu"><a href="./index.html" target="_self">景点查询</a></div>
-    <div id="track" class="menu"><a href="/trips.html" target="_self">足迹地图</a></div>
+    <div id="track" class="menu"><a href="./trips.html" target="_self">足迹地图</a></div>
     <div id="comment" class="menu">景区详情
         <ul class="menu">
-            <li><a href="/getcomments.html" target="_self">景区详细信息</a></li>
-            <li><a href="/heatmap.html" target="_self">景区热力图</a></li>
+            <li><a href="./getcomments.html" target="_self">景区详细信息</a></li>
+            <li><a href="./heatmap.html" target="_self">景区热力图</a></li>
         </ul>
     </div>
     <div id="heat" class="menu">足迹数据可视化
         <ul class="menu">
-            <li><a href="/trips3D.html" target="_self">三维路径图</a></li>
-            <li><a href="/getHotMap.html" target="_self">足迹热力图</a></li>
+            <li><a href="./trips3D.html" target="_self">三维路径图</a></li>
+            <li><a href="./getHotMap.html" target="_self">足迹热力图</a></li>
         </ul>
     </div>
-    <div id="bill" class="menu"><a href="/bills.html" target="_self">账单记录</a></div>
-    <div id="login"><a href="/login.html" target="_self">登录</a></div>
-    <div id="register"><a href="/register.html" target="_self">注册</a></div>
+    <div id="bill" class="menu"><a href="./bills.html" target="_self">账单记录</a></div>
+    <div id="login"><a href="./login.html" target="_self">登录</a></div>
+    <div id="register"><a href="./register.html" target="_self">注册</a></div>
     <div id="logout">注销</div>
     <div id="showPaths"><font color="white">显示三维路径</font></div>
 
@@ -96,7 +96,7 @@
         var res;
         $.ajax({
             type: "GET",
-            url: "/login",
+            url: "./login",
             data: {affirm: "1"},
             dataType: "text",
             async: false,
@@ -112,7 +112,7 @@
             return;
         }
         alert(res.message);
-        window.location.href = "/index.html";
+        window.location.href = "./index.html";
 
 
     }
@@ -173,7 +173,7 @@
 
         $.ajax({
             type: "GET",
-            url: "/trips",
+            url: "./trips",
             data: {},
             dataType: "text",
             success: function (result) {
