@@ -23,11 +23,18 @@ public class GListener implements ServletContextListener {
             Connection con = DriverManager.getConnection(host, userName, passWord);
             ServletContext svtcontext = sce.getServletContext();
             svtcontext.setAttribute("connection", con);
+            Timer timer = new Timer();
+            System.out.println("服务器开启");
+            AutoCheckTask autoCheckTask = new AutoCheckTask(con,sce.getServletContext());
+            timer.schedule(autoCheckTask, 10000, 600000);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+
+
     }
 
     @Override

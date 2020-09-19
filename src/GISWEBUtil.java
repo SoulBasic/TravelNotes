@@ -473,6 +473,7 @@ public class GISWEBUtil {
         // 当找到目录时，创建目录
         if (file.isDirectory()) {
             file2.mkdir();
+            System.out.println("创建目录"+file2);
             File[] files = file.listFiles();
             for (File file3 : files) {
                 // 递归
@@ -483,6 +484,7 @@ public class GISWEBUtil {
             File file3 = new File(file2.getAbsolutePath());
             try {
                 file3.createNewFile();
+                System.out.println("创建文件"+file3);
                 copyDatas(file.getAbsolutePath(), file3.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
