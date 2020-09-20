@@ -118,13 +118,10 @@ public class Albums extends HttpServlet {
         }
         ResourceBundle rb = ResourceBundle.getBundle("dbcfg");
         GISWEBUtil.xcopy(rb.getString("root"), path);
-        System.out.println("复制"+rb.getString("root")+"到"+path);
         for (int l = 0; l < photoSize; l++) {
             String fileName = DBpath + photoFileNames.get(l);
-            System.out.println("s分割前"+fileName);
             String[] s = fileName.split("/");
             fileName = path + photoFileNames.get(l);
-            System.out.println("s1分割前"+fileName);
             String[] s1 = fileName.split("/");
 
 
@@ -137,12 +134,12 @@ public class Albums extends HttpServlet {
             GISWEBUtil.changeSize(420,280,path + "/assets/" + s1[9]);
         }
 
-        System.out.println("part文件"+rb.getString("part1"));
+
         FileInputStream fileInputStream = new FileInputStream(rb.getString("part1"));
         InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-        System.out.println("app.js文件"+path + "/assets/app.js");
+
         FileOutputStream fileOutputStream = new FileOutputStream(path + "/assets/app.js");
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8);
         BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);

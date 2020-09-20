@@ -1,8 +1,6 @@
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ResourceBundle;
 import java.util.TimerTask;
 
@@ -26,10 +24,11 @@ public class AutoCheckTask extends TimerTask {
     @Override
     public void run() {
         try {
-            System.out.println("服务器自刷新mysql连接");
-            con.close();
-            con = DriverManager.getConnection(host, userName, passWord);
-            servletContext.setAttribute("connection", con);
+            Connection conn = (Connection) servletContext.getAttribute("connection");
+            PreparedStatement st = conn.prepareStatement("update time set lasttime=? where name='jwl'");
+            st.setString(1, String.valueOf(System.currentTimeMillis()));
+            st.executeUpdate();
+            servletContext.setAttribute("connection", conn);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
