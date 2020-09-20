@@ -28,10 +28,9 @@ public class AutoCheckTask extends TimerTask {
         try {
             System.out.println("服务器自刷新mysql连接");
             con.close();
-            Class.forName("com.mysql.jdbc.Driver");
             con = DriverManager.getConnection(host, userName, passWord);
             servletContext.setAttribute("connection", con);
-        } catch (SQLException | ClassNotFoundException throwables) {
+        } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
 
