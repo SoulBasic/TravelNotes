@@ -20,9 +20,8 @@ import java.util.List;
 public class Trips extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setHeader("Access-Control-Allow-Origin","*");
-
         resp.setContentType("text/html;charset=UTF-8");
+
         PrintWriter pw = resp.getWriter();
         HttpSession ss = req.getSession(false);
         if (ss==null) {
